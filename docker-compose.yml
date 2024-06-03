@@ -10,13 +10,14 @@ services:
   client-gateway:
     build: ./client-gateway
     ports:
-      - "${CLIENT_GATEWAY_PORT}:3000"
+      - "${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}"
     volumes:
       - ./client-gateway/src:/usr/src/app/src
     command: npm run start:dev
     environment:
       - PORT=3000
       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
+      - DATABASE_URL=${AUTH_DATABASE_URL}
 
   products-ms:
     build: ./products-ms
@@ -24,7 +25,7 @@ services:
       - ./products-ms/src:/usr/src/app/src
     command: npm run start:dev
     environment:
-      - PORT=3000
+      - PORT=${INTERNAL_PORT}
       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
       - DATABASE_URL=file:./dev.db
 
@@ -34,7 +35,7 @@ services:
       - ./orders-ms/src:/usr/src/app/src
     command: npm run start:dev
     environment:
-      - PORT=3000
+      - PORT=${INTERNAL_PORT}
       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
       - DATABASE_URL=postgresql://postgres:123456@orders-db:5432/ordersdb?schema=public
     depends_on:
@@ -69,3 +70,17 @@ services:
       - STRIPE_ENDPOINT_SECRET=${STRIPE_ENDPOINT_SECRET}
       - STRIPE_SUCCESS_URL=${STRIPE_SUCCESS_URL}
       - STRIPE_CANCEL_URL=${STRIPE_CANCEL_URL}
+
+# =======================
+# Auth Microservice
+# =======================
+  auth-ms:
+    build: ./auth-ms
+    volumes:
+      - ./auth-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    ports:
+      - ${AUTH_MS_PORT}:${AUTH_MS_PORT}
+    environment:
+      - PORT=${AUTH_MS_PORT}
+      - NATS_SERVERS=//nats-server:${NATS_SERVER_PORT}
