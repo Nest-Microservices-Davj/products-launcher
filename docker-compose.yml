@@ -84,3 +84,4 @@ services:
     environment:
       - PORT=${AUTH_MS_PORT}
       - NATS_SERVERS=//nats-server:${NATS_SERVER_PORT}
+      - DATABASE_URL=${AUTH_DATABASE_URL}
