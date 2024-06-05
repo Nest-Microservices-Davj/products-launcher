@@ -1,0 +1,72 @@
+version: '3'
+
+services:
+
+  nats-server:
+    image: nats:latest
+
+  client-gateway:
+    build: 
+      context: ./client-gateway
+      dockerfile: Dockerfile.prod
+    image: client-gateway-prod
+    ports:
+      - "${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}"
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+
+  products-ms:
+    build: 
+      context: ./products-ms
+      dockerfile: Dockerfile.prod
+    image: products-ms-prod
+    environment:
+      - PORT=${INTERNAL_PORT}
+      - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
+      - DATABASE_URL=file:./dev.db
+
+#   orders-ms:
+#     build: ./orders-ms
+#     volumes:
+#       - ./orders-ms/src:/usr/src/app/src
+#     command: npm run start:dev
+#     environment:
+#       - PORT=${INTERNAL_PORT}
+#       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
+#       - DATABASE_URL=postgresql://postgres:123456@orders-db:5432/ordersdb?schema=public
+#     depends_on:
+#       - orders-db
+
+# =======================
+# Payments Microservice
+# =======================
+  payments-ms:
+    build: 
+      context: ./payments-ms
+      dockerfile: Dockerfile.prod
+    image: payments-ms-prod
+    ports:
+      - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
+    environment:
+      - PORT=${PAYMENTS_MS_PORT}
+      - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
+      - STRIPE_API_KEY=${STRIPE_API_KEY}
+      - STRIPE_ENDPOINT_SECRET=${STRIPE_ENDPOINT_SECRET}
+      - STRIPE_SUCCESS_URL=${STRIPE_SUCCESS_URL}
+      - STRIPE_CANCEL_URL=${STRIPE_CANCEL_URL}
+
+# =======================
+# Auth Microservice
+# =======================
+  auth-ms:
+    build: 
+      context: ./auth-ms
+      dockerfile: Dockerfile.prod
+    image: auth-ms-prod
+    environment:
+      - PORT=${INTERNAL_PORT}
+      - NATS_SERVERS=//nats-server:${NATS_SERVER_PORT}
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
