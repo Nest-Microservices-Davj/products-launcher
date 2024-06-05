@@ -26,18 +26,8 @@ services:
       - PORT=${INTERNAL_PORT}
       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
       - DATABASE_URL=file:./dev.db
-
-#   orders-ms:
-#     build: ./orders-ms
-#     volumes:
-#       - ./orders-ms/src:/usr/src/app/src
-#     command: npm run start:dev
-#     environment:
-#       - PORT=${INTERNAL_PORT}
-#       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
-#       - DATABASE_URL=postgresql://postgres:123456@orders-db:5432/ordersdb?schema=public
-#     depends_on:
-#       - orders-db
+    depends_on:
+      - nats-server
 
 # =======================
 # Payments Microservice
@@ -56,6 +46,8 @@ services:
       - STRIPE_ENDPOINT_SECRET=${STRIPE_ENDPOINT_SECRET}
       - STRIPE_SUCCESS_URL=${STRIPE_SUCCESS_URL}
       - STRIPE_CANCEL_URL=${STRIPE_CANCEL_URL}
+    depends_on:
+      - nats-server
 
 # =======================
 # Auth Microservice
@@ -70,3 +62,19 @@ services:
       - NATS_SERVERS=//nats-server:${NATS_SERVER_PORT}
       - DATABASE_URL=${AUTH_DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - nats-server
+
+  orders-ms:
+    build: 
+      context: ./orders-ms
+      dockerfile: Dockerfile.prod
+      args:
+        - ORDERS_DATABASE_URL=${ORDERS_DATABASE_URL}
+    image: order-ms-prod
+    environment:
+      - PORT=${INTERNAL_PORT}
+      - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
+      - DATABASE_URL=${ORDERS_DATABASE_URL}
+    depends_on:
+      - nats-server
