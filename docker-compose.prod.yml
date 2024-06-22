@@ -9,7 +9,7 @@ services:
     build: 
       context: ./client-gateway
       dockerfile: Dockerfile.prod
-    image: client-gateway-prod
+    image: us-east1-docker.pkg.dev/microservices-426101/image-registry/client-gateway-prod
     ports:
       - "${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}"
     environment:
@@ -21,7 +21,7 @@ services:
     build: 
       context: ./products-ms
       dockerfile: Dockerfile.prod
-    image: products-ms-prod
+    image: us-east1-docker.pkg.dev/microservices-426101/image-registry/products-ms-prod
     environment:
       - PORT=${INTERNAL_PORT}
       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
@@ -36,7 +36,7 @@ services:
     build: 
       context: ./payments-ms
       dockerfile: Dockerfile.prod
-    image: payments-ms-prod
+    image: us-east1-docker.pkg.dev/microservices-426101/image-registry/payments-ms-prod
     ports:
       - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
     environment:
@@ -56,7 +56,7 @@ services:
     build: 
       context: ./auth-ms
       dockerfile: Dockerfile.prod
-    image: auth-ms-prod
+    image: us-east1-docker.pkg.dev/microservices-426101/image-registry/auth-ms-prod
     environment:
       - PORT=${INTERNAL_PORT}
       - NATS_SERVERS=//nats-server:${NATS_SERVER_PORT}
@@ -71,7 +71,7 @@ services:
       dockerfile: Dockerfile.prod
       args:
         - ORDERS_DATABASE_URL=${ORDERS_DATABASE_URL}
-    image: order-ms-prod
+    image: us-east1-docker.pkg.dev/microservices-426101/image-registry/order-ms-prod
     environment:
       - PORT=${INTERNAL_PORT}
       - NATS_SERVERS=nats://nats-server:${NATS_SERVER_PORT}
